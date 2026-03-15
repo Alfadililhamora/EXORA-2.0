@@ -35,10 +35,14 @@ RF24 radio(CE_PIN, CSN_PIN);
 const byte address[6] = "00001";
 unsigned long lastRecvTime = 0;
 
-// Batasi ke 15% (255 * 0.15 = 38.25)
+// Variabel Kontrol
 int currentSpeed = 0;
-const int MAX_SPEED_LIMIT = 38; 
-const int ACCEL_DELAY = 4; // Lebih smooth lagi
+const int MAX_SPEED_LIMIT = 38; // 15% Speed
+const int ACCEL_DELAY = 4;
+
+// Variabel Toggle LED
+bool statusLampu = false;
+bool tombolLedSebelumnya = false;
 
 void paksaStop() {
   digitalWrite(IN1, LOW); digitalWrite(IN2, LOW);
@@ -56,6 +60,7 @@ void setup() {
   Serial.begin(115200);
   pinMode(BUZZER, OUTPUT);
   pinMode(LAMPU_PIN, OUTPUT);
+  digitalWrite(LAMPU_PIN, LOW);
 
   mySPI->begin(SCK_PIN, MISO_PIN, MOSI_PIN, CSN_PIN);
   if (!radio.begin(mySPI)) {
@@ -81,12 +86,20 @@ void loop() {
 }
 
 void eksekusiGerak() {
+  // --- LOGIKA KLAKSON (Tetap Hold) ---
   digitalWrite(BUZZER, data.hornBtn ? HIGH : LOW);
-  digitalWrite(LAMPU_PIN, data.ledBtn ? HIGH : LOW);
+
+  // --- LOGIKA TOGGLE LED (Tap Mati/Hidup) ---
+  // Jika tombol sekarang ditekan DAN sebelumnya tidak ditekan
+  if (data.ledBtn == true && tombolLedSebelumnya == false) {
+    statusLampu = !statusLampu; // Balikkan status (ON jadi OFF, OFF jadi ON)
+    digitalWrite(LAMPU_PIN, statusLampu ? HIGH : LOW);
+  }
+  tombolLedSebelumnya = data.ledBtn; // Simpan status sekarang untuk loop berikutnya
 
   bool bergerak = false;
 
-  // 1. MAJU / MUNDUR (Sudah Benar)
+  // 1. MAJU / MUNDUR
   if (data.rightX < 400) { // Maju
     digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
     digitalWrite(IN3, LOW);  digitalWrite(IN4, HIGH);
@@ -98,7 +111,7 @@ void eksekusiGerak() {
     bergerak = true;
   } 
   
-  // 2. BELOK KIRI / KANAN (Fix Logika Terbalik)
+  // 2. BELOK KIRI / KANAN
   else if (data.leftY < 400) { // Belok Kanan
     digitalWrite(IN1, LOW);  digitalWrite(IN2, HIGH);
     digitalWrite(IN3, LOW);  digitalWrite(IN4, HIGH);
