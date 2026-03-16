@@ -74,5 +74,8 @@ void loop() {
     digitalWrite(BUZZ_PIN, HIGH); delay(5); digitalWrite(BUZZ_PIN, LOW);
   }
 
+
+  3
+
   delay(50);
 }
