@@ -48,8 +48,8 @@ Namun, jika ingin bekerja sama atau berkolaborasi, silakan hubungi pemilik repos
 ## 📬 Kontak
 Untuk izin penggunaan, kolaborasi, atau pertanyaan lebih lanjut, silakan hubungi:
 
-- Email: (isi email kamu)
-- Instagram / LinkedIn: (opsional)
+- LinkedIn: Alfadil ilhamora
+- Instagram: @alkyora_
 
 ---
 
