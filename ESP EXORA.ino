@@ -53,6 +53,11 @@ int currentSpeed = 0;
 const int MAX_SPEED_LIMIT = 38; // 15% Speed
 const int ACCEL_DELAY = 4;
 
+// ========== KALIBRASI MOTOR B (PIN 19 & 21) ==========
+// Ubah angka 0.85 (85%) untuk menyesuaikan kecepatan Motor B agar seimbang dengan Motor A.
+// Jika masih terlalu kencang, perkecil angkanya (misal 0.80 atau 0.75).
+float calibrationB = 0.85; 
+
 // Variabel Toggle LED
 bool statusLampu = false;
 bool tombolLedSebelumnya = false;
@@ -259,11 +264,9 @@ void loop() {
   }
   
   // Kontrol buzzer dengan prioritas: Ultrasonik > Remote
-  // Jika ada objek terdeteksi, buzzer menyala terus
   if (ultrasonicObstacle) {
     digitalWrite(BUZZER, HIGH);
   } 
-  // Jika tidak ada objek, buzzer dikontrol oleh remote (klakson)
   else {
     digitalWrite(BUZZER, data.hornBtn ? HIGH : LOW);
   }
@@ -274,8 +277,6 @@ void loop() {
 }
 
 void eksekusiGerak() {
-  // HAPUS baris digitalWrite(BUZZER, ...) dari sini karena sudah dipindah ke loop()
-  
   if (data.ledBtn == true && tombolLedSebelumnya == false) {
     statusLampu = !statusLampu;
     digitalWrite(LAMPU_PIN, statusLampu ? HIGH : LOW);
@@ -310,8 +311,14 @@ void eksekusiGerak() {
       currentSpeed += 1; 
       delay(ACCEL_DELAY); 
     }
-    analogWrite(ENA, currentSpeed);
-    analogWrite(ENB, currentSpeed);
+    
+    // --- PENERAPAN KALIBRASI ---
+    analogWrite(ENA, currentSpeed); // Motor A (Normal)
+    
+    // Motor B dikurangi kecepatannya sesuai faktor kalibrasi
+    int speedB = (int)(currentSpeed * calibrationB);
+    analogWrite(ENB, speedB); 
+    
   } else {
     paksaStop();
   }
